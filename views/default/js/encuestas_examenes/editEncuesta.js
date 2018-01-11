@@ -48,7 +48,7 @@ $('#nowlocal').attr('value', $localtime);
  $('.questionType').change(function(event){
 
 	//$q es el número de la pregunta
-	$q = $(event.target).attr('name')[12];
+	$q = $(event.target).attr('name').substring(12);
 	$type = document.getElementById("questionType"+$q).value;
 	$element = $(event.target).parents('.question');
 	switch($type){
@@ -112,7 +112,7 @@ $('#nowlocal').attr('value', $localtime);
 	$clone = $lastdiv.clone(true);
 	$lastdiv.removeClass('lastQ');
 
-	$numQ = $(event.target).attr('id')[3];
+	$numQ = $(event.target).attr('id').substring(3);
 	$numQ++;
 	$clone.attr('data-numQ', $numQ);
 
