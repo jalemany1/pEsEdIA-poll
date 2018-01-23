@@ -147,275 +147,83 @@ echo elgg_format_element('div', $optConf, $conf);
 //FIN CONFIGURACIÓN
 
 //PREGUNTAS - RECUPERACIÓN DE DATOS DEL EXAMEN
-
-$numQ = 1;
-$nomQ = 'q' . $numQ;
-
-$numR = 1;
-$nomR = 'r' . $numQ . $numR;
-
 $encuesta_questions = unserialize($resultados->questions_encuesta);
 $encuesta_obtain_required = unserialize($encuesta->questions);
 
-$questionType = elgg_view('input/hidden', ['id' => 'totalQ', 'value' => sizeof($encuesta_questions), 'name'=>'totalQ']);
+$qnumber = count($encuesta_questions);
 $questionType .= '<br><p class="elgg-subtext req">'.elgg_echo('encuestas_examenes:modify_answers_note_encuesta').'</p>';
 
-$numItems_q = count($encuesta_questions);
-$cont_q = 0;
-$lastQ = '';
+$nq = 1;
 foreach($encuesta_questions as $q_key=>$q){
 
-	if(++$cont_q === $numItems_q) {
-	    $lastQ = 'lastQ';
-	}
+	// Question
 	$questionIndividual = elgg_view_icon('delete', ['class' => 'elgg-discoverable delete-question']) . '<br>';
-	$questionIndividual .= elgg_format_element('label', ['for' => 'questionType'.$numQ, 'class' => 'labelTitulo'], elgg_echo('encuestas_examenes:qType_label'));
-	$questionIndividual .= elgg_view('input/dropdown', ['name' => 'questionType'.$numQ, 'options_values' => array('Checkboxes'=>elgg_echo('encuestas_examenes:checkboxes'), 'Radio'=>elgg_echo('encuestas_examenes:radio'), 'Text'=>elgg_echo('encuestas_examenes:text'), 'Long Text'=>elgg_echo('encuestas_examenes:long_text')), 'id' => 'questionType'.$numQ, 'class' => 'questionType parameters-box', 'value' => $q['type']]);
-	$questionIndividual .= elgg_view('input/hidden', ['name' => 'qType'.$numQ, 'value' => $q['type'], 'class' => 'qType', 'id' => 'qType'.$numQ]);
-	$questionIndividual .= elgg_view('input/text', ['name' => 'Pregunta' . $numQ, 'id' => 'Qtitle'.$numQ, 'class' => 'Qtitle container-margin', 'placeholder' => 'Pregunta' . $numQ, 'required'=>'required', 'value'=>$q['qTittle']]);
-	$questionIndividual .= '<br><p class="elgg-subtext">'.elgg_echo('encuestas_examenes:pregunta_nota_aclaratoria').'</p>';
+	$questionIndividual .= elgg_format_element('label', ['for' => 'questionType'.$nq, 'class' => 'labelTitulo'], elgg_echo('encuestas_examenes:qType_label'));
+	$questionIndividual .= elgg_view('input/dropdown', ['name' => 'questionType'.$nq, 'options_values' => array('Checkboxes'=>elgg_echo('encuestas_examenes:checkboxes'), 'Radio'=>elgg_echo('encuestas_examenes:radio'), 'Text'=>elgg_echo('encuestas_examenes:text'), 'Long Text'=>elgg_echo('encuestas_examenes:long_text')), 'id' => 'questionType'.$nq, 'class' => 'questionType parameters-box', 'value' => $q['type']]);
+	$questionIndividual .= elgg_view('input/hidden', ['name' => 'qType'.$nq, 'value' => $q['type'], 'class' => 'qType', 'id' => 'qType'.$nq]);
+	$questionIndividual .= elgg_view('input/text', ['name' => 'Pregunta' . $nq, 'id' => 'Qtitle'.$nq, 'class' => 'Qtitle container-margin', 'placeholder' => 'Pregunta' . $nq, 'required'=>'required', 'value'=>$q['qTittle']]);
 
+	// Answers
+	$nr = 1;
+	$qIndividual = '';
+	if($q['type'] == "Radio" || $q['type'] == "Checkboxes") {
+		$answers = $q['answers'];
+		$nanswers = count($answers);
+		
+		foreach($answers as $key => $a){
+			$rname = 'q' . $nq . 'r' . $nr;  
+			
+			$answer_fields = '<br>' . elgg_view('input/text', [
+				'name' => $rname,
+				'class' => ['resp_rec' . $nr, 'answ-css'],
+				'value' => $a['answer'],
+			]); 
 
-//Respuestas
-
-$answer_fields = '<br>' . elgg_view('input/text', [
-			'name' => $nomR,
-			'placeholder' => elgg_echo('encuestas_examenes:respuesta').$numR,
+			$lastR = ($nr == $nanswers) ? 'lastR' : 'answ';
+			$li_options = ['data-index' => $nr];
+			$li_options += ['data-numQuestion' => $nq];
+			$li_options['class'] = $lastR;
+			$qIndividual .= elgg_format_element('li', $li_options, $answer_fields);
+			
+			$nr++;
+		}
+	}
+	if($qIndividual == '') {
+		$rname = 'q' . $nq . 'r' . $nr;
+		$answer_fields = '<br>' . elgg_view('input/text', [
+			'name' => $rname,
+			'placeholder' => elgg_echo('encuestas_examenes:respuesta') . $nr,
 			'class' => 'answ-css',
 		]); 
 
-$li_options = ['data-index' => $numR];
-$li_options += ['data-numQuestion' => $numQ];
-$li_options['class'] = ['lastR', 'hidden', 'answ'.$numQ, 'answRes'];
-$questionIndividual .= elgg_format_element('div', $li_options, $answer_fields);
-$questionIndividual .= '<br>';
-
-
-
-/*	$answer_fieldsCB = elgg_view('input/checkboxes', [
-		'name' => 'CB'.$numQ, 
-		'options' => array( elgg_view('input/text', [
-				'name' => $nomR.'CB',
-				'placeholder' => elgg_echo('encuestas_examenes:respuesta') . elgg_echo($numR),
-				'class' => 'lastR cb resp1 answ-css',
-			]) => $nomR.'CB'), 
-	]);
-
-
-	//$li_optionsCB = ['data-index' => $numR];
-	//$li_optionsCB += ['data-numQuestion' => $numQ];
-	$li_optionsCB = ['data-type' => 'checkboxes'];
-	$li_optionsCB['class'] = ['answ'.$numQ, 'answCB', 'hidden' ,'elgg-discover'];	
-	$questionIndividual .= elgg_format_element('div', $li_optionsCB, $answer_fieldsCB);
-
-	//Respuestas radio
-	//TODO: Añadir el delete y el drag
-
-	$answer_fieldsR = elgg_view('input/radio', [
-		'name' => 'R'.$numQ, 
-		'options' => array( elgg_view('input/text', [
-				'name' => $nomR.'R',
-				'placeholder' => elgg_echo('encuestas_examenes:respuesta') . elgg_echo($numR),
-				'class' => 'lastR radio answ-css',
-			]) => $nomR.'R'), 
-	]);
-
-
-	$li_optionsR = ['data-type' => 'radio'];
-	$li_optionsR['class'] = ['hidden', 'answ'.$numQ, 'answR', 'elgg-discover'];	
-	$questionIndividual .= elgg_format_element('div', $li_optionsR, $answer_fieldsR);
-
-	//Respuesta Text
-
-	$answer_fieldsT = elgg_view('input/checkbox', ['name' => 'regexT'.$numQ, 'class'=>'regexT', 'label' =>elgg_echo('encuestas_examenes:regex'), 'value'=>'SI']);
-
-	$answer_fieldsT .= elgg_view('input/text', [
-		'name' => $nomR.'T',
-		'placeholder' => elgg_echo('encuestas_examenes:right_answer_text'),
-	]);
-
-	$li_optionsT = ['data-type' => 'text'];
-	$li_optionsT['class'] = ['hidden', 'answ'.$numQ, 'answT', 'elgg-discover', 'text-regex'];	
-	$questionIndividual .= elgg_format_element('div', $li_optionsT, $answer_fieldsT);
-
-	//Respuesta LongText
-
-	$answer_fieldsLT = elgg_view('input/longtext', [
-		'name' => $nomR.'LT',
-		'placeholder' => elgg_echo('encuestas_examenes:right_answer_text'),
-	]);
-
-	$li_optionsLT = ['data-type' => 'longtext'];
-	$li_optionsLT['class'] = ['hidden', 'answ'.$numQ, 'answLT', 'text-regex', 'elgg-discover' ];	 
-	$questionIndividual .= elgg_format_element('div', $li_optionsLT, $answer_fieldsLT) . '<br>';*/
-  
-
-	//FIN PREGUNTAS - FORMULARIO DINÁMICO
-
-	$answers = $q['answers'];
-
-	$numR = 1;
-	$nomR = 'r' . $numQ . $numR;
-	
-	switch($q['type']){
-
-		case "Checkboxes":
-			
-			//$cb = array();
-
-			$numItems = count($answers);
-			$cuenta = 0;
-			$lastR = '';
-			foreach($answers as $key => $a){
-				//Comprobamos si la respuseta es la última para añadirle la clase .lastR
-				if(++$cuenta === $numItems) {
-				    	$lastR = 'lastR';
-				}  
-				//$ck = '';
-
-				//if(in_array($a['answer'], $q['okanswers'])) $ck = 'ck';
-				
-				$answer_fields_rec .= elgg_view('input/text', [
-					'name' => $nomR,
-					'class' => 'resp_rec'.$numR.' answ-css',
-					'value' => $a['answer'],
-				]);
-				
-				//$cb[$field] = $nomR.'CB';
-
-				$numR++;
-				$nomR = 'r' . $numQ . $numR;
-			}
-
-			/*$answer_fieldsCB_rec = elgg_view('input/checkboxes', [
-				'name' => 'CB'.$numQ, 
-				'options' => $cb,
-			]);*/
-
-			//echo($answer_fieldsCB);
-			//$li_optionsCB_rec = ['data-type' => 'checkboxes'];
-			$li_options_rec['class'] = ['answ_rec'.$numQ,'elgg-discover', 'rec', $lastR];	
-			$questionIndividual .= elgg_format_element('div', $li_options_rec, $answer_fields_rec);
-			$questionIndividual .= '<br>';
-			break;
-
-
-		case "Radio":
-			$numItems = count($answers);
-			$cuenta = 0;
-			$lastR = '';
-			foreach($answers as $key => $a){
-				//Comprobamos si la respuseta es la última para añadirle la clase .lastR
-				if(++$cuenta === $numItems) {
-				    	$lastR = 'lastR';
-				}  
-				//$ck = '';
-
-				//if(in_array($a['answer'], $q['okanswers'])) $ck = 'ck';
-				
-				$answer_fields_rec .= elgg_view('input/text', [
-					'name' => $nomR,
-					'class' => 'resp_rec'.$numR.' answ-css ',
-					'value' => $a['answer'],
-				]);
-				
-				//$cb[$field] = $nomR.'CB';
-
-				$numR++;
-				$nomR = 'r' . $numQ . $numR;
-			}
-
-			/*$answer_fieldsCB_rec = elgg_view('input/checkboxes', [
-				'name' => 'CB'.$numQ, 
-				'options' => $cb,
-			]);*/
-
-			//echo($answer_fieldsCB);
-			//$li_optionsCB_rec = ['data-type' => 'checkboxes'];
-			$li_options_rec['class'] = ['answ_rec'.$numQ,'elgg-discover', 'rec', $lastR];	
-			$questionIndividual .= elgg_format_element('div', $li_options_rec, $answer_fields_rec);
-			$questionIndividual .= '<br>';
-			break;
-		/*case "Text":
-			
-			//Se comprueba si está marcado el campo de expresión regular
-			$ck = '';
-
-			if($q['regex'] == 'SI') $ck = 'ck';
-
-			$answer_fieldsT_rec = elgg_view('input/checkbox', ['name' => 'regexT'.$numQ, 'class'=>'regexT '  . $ck, 'label' =>elgg_echo('encuestas_examenes:regex'), 'value'=>'SI']);
-
-
-			$answer_fieldsT_rec .= elgg_view('input/text', [
-				'name' => $nomR.'T',
-				'placeholder' => elgg_echo('encuestas_examenes:right_answer_text'),
-				'value' => $q['okanswers'][0],
-			]);
-
-			$li_optionsT_rec = ['data-type' => 'text'];
-			$li_optionsT_rec['class'] = ['answ_rec'.$numQ, 'answT', 'elgg-discover', 'text-regex', 'rec'];	
-			$questionIndividual .= elgg_format_element('div', $li_optionsT_rec, $answer_fieldsT_rec) . '<br>';
-
-
-			break;
-
-		case "Long Text":
-
-			$answer_fieldsLT_rec = elgg_view('input/longtext', [
-				'name' => $nomR.'LT',
-				'placeholder' => elgg_echo('encuestas_examenes:right_answer_text'),
-				'value' => $q["okanswers"][0],
-			]);
-
-
-			$li_optionsLT_rec = ['data-type' => 'longtext'];
-			$li_optionsLT_rec['class'] = ['answ_rec'.$numQ, 'answLT', 'text-regex', 'elgg-discover', 'rec'];	
-			$questionIndividual .= elgg_format_element('div', $li_optionsLT_rec, $answer_fieldsLT_rec) . '<br>';
-			
-			break;*/
-
+		$li_options = ['data-index' => $nr];
+		$li_options += ['data-numQuestion' => $nq];
+		$li_options['class'] = ['lastR', 'hidden'];
+		$questionIndividual .= elgg_format_element('li', $li_options, $answer_fields);
+	} else {
+		$questionIndividual .= $qIndividual;
 	}
 
-	//Puntuaciones por pregunta
-	/*$scoreQuestions = '<p class="elgg-subtext">'. elgg_echo('encuestas_examenes:question_mark_note').'</p>';
-	$questionIndividual .= elgg_format_element('div', [], $scoreQuestions); 
+	$req = ($encuesta_obtain_required[$q_key]["required"] == 'NO') ? true : false;	
+	$required = elgg_view('input/checkbox', ['name' => 'requiredQ' . $nq, 'value' => 'NO','label' => elgg_echo('encuestas_examenes:required'), 'checked' => $req]) . '<br>';
+	$questionIndividual .= elgg_format_element('div', ['class' => 'divReq'], $required) . '<br>';
 
-	$acierto = elgg_format_element('label', ['for' => 'acierto'.$numQ, 'class'=>'parameters-label'], elgg_echo('encuestas_examenes:success'));
-	$acierto .= elgg_view('input/text', ['name' => 'acierto'.$numQ, 'id' => 'acierto'.$numQ, 'type' => 'number', 'min' => '0', 'placeholder'=>'0', 'style'=>'width:10%', 'class'=>'acierto parameters-box-time', 'step' =>'0.01', 'value'=>$q['success'], 'required'=>'required']);
-	$questionIndividual .= elgg_format_element('div', [], $acierto); 
-
-	$fallo = elgg_format_element('label', ['for' => 'fallo'.$numQ, 'class'=>'parameters-label'], elgg_echo('encuestas_examenes:fail'));
-	$fallo .= elgg_view('input/text', ['name' => 'fallo'.$numQ, 'id' => 'fallo'.$numQ, 'type' => 'number', 'min' => '0', 'placeholder'=>'0', 'style'=>'width:10%', 'class'=>'fallo parameters-box-time', 'step' =>'0.01', 'value'=>$q['fail']]);
-	$questionIndividual .= elgg_format_element('div', [], $fallo);*/
-
-	$req = false;
-	if($encuesta_obtain_required[$q_key]["required"] == 'NO') $req = true;	
-
-	$required = elgg_view('input/checkbox', ['name' => 'requiredQ'.$numQ, 'value' => 'NO','label' => elgg_echo('encuestas_examenes:required'), 'checked' => $req]) . '<br>';
-	$div_req = ['class' => 'divReq'];
-	$questionIndividual .= elgg_format_element('div', $div_req, $required) . '<br>';
-
-	$div_options = ['data-numQ' => $numQ];
+	
+	$lastQ = ($nq == $qnumber) ? 'lastQ' : '';
+	$div_options = ['data-numQ' => $nq];
 	$div_options['class'] = [$lastQ, 'question', 'elgg-discover'];
 
 	$questionType .= elgg_format_element('div', $div_options, $questionIndividual);
 
-
-	$numQ++;
-
-	$numR = 1;
-	$nomR = 'r' . $numQ . $numR;
-	
+	$nq++;
 }
-
 //FIN PREGUNTAS - RECUPERACIÓN DE DATOS DEL EXAMEN
-
 
 $preguntas = elgg_format_element('div', [] , $questionType);
 
 //NEW
-$preguntas .= elgg_view('input/button', ['name' => 'newQ', 'value' => elgg_echo('encuestas_examenes:new'), 'class' => 'new elgg-button-submit', 'id' => 'new'.($numQ-1)]);
-$preguntas .= elgg_view('input/hidden', ['name' => 'numQuestions', 'value' => '1', 'id' => 'numQuestions']);
+$preguntas .= elgg_view('input/button', ['name' => 'newQ', 'value' => elgg_echo('encuestas_examenes:new'), 'class' => 'new elgg-button-submit', 'id' => 'new'.($nq-1)]);
+$preguntas .= elgg_view('input/hidden', ['name' => 'numQuestions', 'value' => $qnumber, 'id' => 'numQuestions']);
 
 $submit =  elgg_view('input/submit', ['value' => elgg_echo('encuestas_examenes:save'), 'class' => 'submitSave']);
 $preguntas .= elgg_format_element('div', [], $submit) . '<br>';
@@ -423,12 +231,6 @@ $preguntas .= elgg_format_element('div', [], $submit) . '<br>';
 $back = elgg_view_icon('arrow-left', ['class' => 'back']);
 $preguntas .= elgg_format_element('div', [], $back);  
 	 
-
-
-
 $optConf['id'] = 'preguntas';
 $optConf['class'] = 'hidden';
 echo elgg_format_element('div', $optConf, $preguntas);
-
-//FIN PREGUNTAS
-

@@ -39,7 +39,7 @@ elgg.encuestas_examenes.init_edit = function() {
 	$clone.attr('data-index', $numR);
 	$clone.find('input').attr('name', 'q' + $numQ + 'r' + $numR);
 	$clone.find('input').attr('placeholder', elgg.echo('encuestas_examenes:respuesta') + $numR);
-	$clone.find('input').val('');
+	$clone.find('input').attr('value', '');
 	$clone.removeClass('answ');
 	$lastli.after($clone);
  });
@@ -67,13 +67,13 @@ elgg.encuestas_examenes.init_edit = function() {
 	$clone.find('.Qtitle').attr('id', 'Qtitle' + $numQ);
 	$clone.find('.Qtitle').attr('name', 'Pregunta' + $numQ);
 	$clone.find('.Qtitle').attr('placeholder', elgg.echo('encuestas_examenes:pregunta'));
-	$clone.find('.Qtitle').val("");
+	$clone.find('.Qtitle').attr('value', '');
 
 	//Respuestas
 	$answ = $clone.find('.lastR');
 	$answ_input = $answ.find('input'); 
 	$clone.find('.answ').remove();
-	$answ_input.val("");
+	$answ_input.attr('value', '');
 	$answ_input.attr('name', 'q'+$numQ+'r1');
 	$answ_input.attr('placeholder', elgg.echo('encuestas_examenes:respuesta') + 1);
 	$answ.attr('data-index', 1);
