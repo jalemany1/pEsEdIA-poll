@@ -1,10 +1,9 @@
 <?php
+
 $titulo = get_input('title');
 $desc = get_input('description');
-//$tags = string_to_tag_array(get_input('tags'));
 
 //Obtener el instate en el cual se guarda el encuesta
-
 $now = time();
 
 $diffGTM = get_input('nowlocal');
@@ -31,85 +30,63 @@ $encuesta->subtype = "encuesta";
 $encuesta->title = $titulo;
 $encuesta->description = $desc;
 
-//Exam config
-$encuesta-> start = $inicioTMS;
-$encuesta-> end = $finTMS;
-$encuesta-> diffGTM = $diffGTM;
-$encuesta-> duration = get_input('duration');
-$encuesta-> noDuration = get_input('noDuration');
-$encuesta-> automaticSend = get_input('automaticSend');
+// Settings
+$encuesta->start = $inicioTMS;
+$encuesta->end = $finTMS;
+$encuesta->diffGTM = $diffGTM;
+$encuesta->duration = get_input('duration');
+$encuesta->noDuration = get_input('noDuration');
+$encuesta->automaticSend = get_input('automaticSend');
+$encuesta->resendParams = get_input('resendParams');
+$encuesta->publishNow = get_input('publishExamNow');
+$encuesta->noEndDate = get_input('noEndDate');
+$encuesta->emptyResults = get_input('emptyResults');
 
-$encuesta-> resendParams = get_input('resendParams');
-
-$encuesta-> publishNow = get_input('publishExamNow');
-$encuesta-> noEndDate = get_input('noEndDate');
-
-$encuesta-> emptyResults = get_input('emptyResults');
-
-//Create a new resultados emty object
+//Create a new resultados empty object
 $resultadosEncuesta = new ElggObject();
 $resultadosEncuesta->subtype = "resultadosEncuesta";
 $resultadosEncuesta->title = $titulo;
 
-//$scoreSum = 0;
-//$numQ = 1;
-//$nomQ = 'Pregunta' . $numQ;
+
 $questions = array();
 $questionsResults = array();
-//$q = get_input($nomQ);
 
-$numQuestions = get_input('numQuestions');
+$qnumber = get_input('numQuestions');
+for($i=1; $i<=$qnumber; $i++){ //questions number
+	
+	$qname = 'Pregunta' . $i;
+	$q = get_input($qname);
 
-//Obtiene la nota total para poder escalarla a 10
-/*for($i=1; $i<=$numQuestions;$i++){
-	if($q != '' || !isset($q)){
-		if(get_input('acierto'.$numQ) != null){
-			$scoreSum += (double)get_input('acierto'.$numQ);
-		}
-	}
-	$nomQ = 'Pregunta' . ++$numQ;
-	$q = get_input($nomQ);
-}*/
-
-$numQ = 1;
-$nomQ = 'Pregunta' . $numQ;
-$q = get_input($nomQ);
-for($i=1; $i<=$numQuestions;$i++){
-	if($q != ''){
-		$numR = 1;
-$nomR = 'r' . $numQ . $numR;
+	if(!empty($q)) {
 		$answers = array();
 		$answersResults = array();
-		$ra = array();
-		$r = get_input($nomR);
-		while(isset($r)){
-			if($r != ''){
-				$ra = array(
+
+		$numR = 1;
+		$rname = 'q' . $i . 'r' . $numR;
+		$r = get_input($rname);
+		while (!empty($r)) {
+			$ra = array(
 				"answer" => $r,
 				"votes" => array(
 					'guidVotes' => array(),
-					'value' => 0,
-					),
-				);
+					'value' => 0)
+			);
+			array_push($answersResults, $ra);
+			array_push($answers, $r);
 
-				array_push($answersResults, $ra);
-				array_push($answers, $r);
-
-			}
-			
-			$nomR = 'r' . $numQ . ++$numR;
-			$r = get_input($nomR);
+			$rname = 'q' . $i . 'r' . ++$numR;
+			$r = get_input($rname);
 		}
 
 		$question = array(
-			"type" => get_input('qType'.$numQ),
+			"type" => get_input('qType'.$i),
 			"qTittle" => $q,
 			"answers" => $answers,
-			"required" => get_input('requiredQ'.$numQ),
+			"required" => get_input('requiredQ'.$i),
 		);
 
 		$questionResults = array(
-			"type" => get_input('qType'.$numQ),
+			"type" => get_input('qType'.$i),
 			"qTittle" => $q,
 			"answers" => $answersResults,
 		);
@@ -117,15 +94,11 @@ $nomR = 'r' . $numQ . $numR;
 		array_push($questionsResults, $questionResults);	
 		array_push($questions, $question);
 	}
-	$nomQ = 'Pregunta' . ++$numQ;
-	$q = get_input($nomQ);
-	$question = array();
 }
 
- 
 $encuesta->questions = serialize($questions);
 
-$resultadosEncuesta->questions_encuesta =  serialize($questionsResults);
+$resultadosEncuesta->questions_encuesta = serialize($questionsResults);
 $resultadosEncuesta->resultados_totales = 0;
 $resultadosEncuesta->respuestas_enviadas = serialize(array());
 $resultadosEncuesta->num_respuestas_enviadas = get_input('customResend');
@@ -142,17 +115,10 @@ $resultadosEncuesta->owner_guid = elgg_get_logged_in_user_guid();
 //Guardar en la BD una nueva entidad del subtipo resultadosEncuesta y obtener su guid
 $resultadosEncuesta_guid = $resultadosEncuesta->save();
 
-// save tags as metadata
-//$blog->tags = $tags;
-
 $encuesta->resultadosguid = $resultadosEncuesta_guid;
+
 //Guardar en la BD una nueva entidad del subtipo encuesta
 $encuesta_guid = $encuesta->save();
-
-//Create a relationship between encuesta and resultadosEncuesta: "resultadosEncuesta es una coleccion_de_respuestas de un encuesta"
-//add_entity_relationship($resultadosEncuesta->guid, 'coleccion_de_respuestas', $encuesta->guid);
-
-//elgg_clear_sticky_form('encuesta');
 
 //Si no hay problema al guardar el encuesta, acceder a él directamente
 // si no, registrar error
@@ -169,5 +135,5 @@ if ($encuesta_guid) {
    forward($encuesta->getURL());
 } else {
    register_error(elgg_echo('encuestas_encuestaes:encuesta_not_saved'));
-   forward(REFERER); // REFERER hace referencia a la página previa
+   forward(REFERER);
 }

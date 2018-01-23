@@ -5,7 +5,6 @@ elgg_load_css('mycss');
 
 
 //CONFIGURACIÓN
-
 $title = elgg_format_element('label', ['for' => 'title'], elgg_echo('encuestas_examenes:titulo'));
 $title .= elgg_view('input/text', ['name' => 'title', 'id' => 'title', 'required'=>'required', 'class'=>'container-margin']);
 $conf = elgg_format_element('div', [], $title)  . '<br>';
@@ -86,30 +85,26 @@ echo elgg_format_element('div', $optConf, $conf);
 //FIN CONFIGURACIÓN
 
 //PREGUNTAS
-
-$numQ = 1;
-$nomQ = 'q' . $numQ;
-
-$numR = 1;
-$nomR = 'r' . $numQ . $numR;
+$nq = 1;
+$nr = 1;
+$rname = 'q' . $nq . 'r' . $nr;
 
 $questionType = elgg_view_icon('delete', ['class' => 'elgg-discoverable delete-question']) . '<br>';
-$questionType .= elgg_format_element('label', ['for' => 'questionType'.$numQ, 'class' => 'labelTitulo'], elgg_echo('encuestas_examenes:qType_label'));
-$questionType .= elgg_view('input/dropdown', ['name' => 'questionType'.$numQ, 'options_values' => array('Checkboxes'=>elgg_echo('encuestas_examenes:checkboxes'), 'Radio'=>elgg_echo('encuestas_examenes:radio'), 'Text'=>elgg_echo('encuestas_examenes:text'), 'Long Text'=>elgg_echo('encuestas_examenes:long_text')), 'id' => 'questionType'.$numQ, 'class' => 'questionType parameters-box', 'value' => 'Text']);
-$questionType .= elgg_view('input/hidden', ['name' => 'qType'.$numQ, 'value' => 'Text', 'class' => 'qType', 'id' => 'qType'.$numQ]);
-$questionType .= elgg_view('input/text', ['name' => 'Pregunta' . $numQ, 'id' => 'Qtitle'.$numQ, 'class' => 'Qtitle container-margin', 'placeholder' => elgg_echo('encuestas_examenes:pregunta'), 'required'=>'required']) .'<br>';
+$questionType .= elgg_format_element('label', ['for' => 'questionType'.$nq, 'class' => 'labelTitulo'], elgg_echo('encuestas_examenes:qType_label'));
+$questionType .= elgg_view('input/dropdown', ['name' => 'questionType'.$nq, 'options_values' => array('Checkboxes'=>elgg_echo('encuestas_examenes:checkboxes'), 'Radio'=>elgg_echo('encuestas_examenes:radio'), 'Text'=>elgg_echo('encuestas_examenes:text'), 'Long Text'=>elgg_echo('encuestas_examenes:long_text')), 'id' => 'questionType'.$nq, 'class' => 'questionType parameters-box', 'value' => 'Text']);
+$questionType .= elgg_view('input/hidden', ['name' => 'qType'.$nq, 'value' => 'Text', 'class' => 'qType', 'id' => 'qType'.$nq]);
+$questionType .= elgg_view('input/text', ['name' => 'Pregunta' . $nq, 'id' => 'Qtitle'.$nq, 'class' => 'Qtitle container-margin', 'placeholder' => elgg_echo('encuestas_examenes:pregunta'), 'required'=>'required']) .'<br>';
 
 //Respuestas
-
 $answer_fields = '<br>' . elgg_view('input/text', [
-			'name' => $nomR,
-			'placeholder' => elgg_echo('encuestas_examenes:respuesta').$numR,
+			'name' => $rname,
+			'placeholder' => elgg_echo('encuestas_examenes:respuesta').$nr,
 			'class' => 'answ-css',
 		]); 
 
-$li_options = ['data-index' => $numR];
-$li_options += ['data-numQuestion' => $numQ];
-$li_options['class'] = ['lastR', 'hidden', 'answ'.$numQ];
+$li_options = ['data-index' => $nr];
+$li_options += ['data-numQuestion' => $nq];
+$li_options['class'] = ['lastR', 'hidden'];
 $questionType .= elgg_format_element('li', $li_options, $answer_fields);
 $questionType .= '<br>';
 
@@ -118,13 +113,13 @@ $required .= elgg_view('input/checkbox', ['name' => 'requiredQ1', 'value' => 'NO
 $div_req = ['class' => 'divReq'];
 $questionType .= elgg_format_element('div', $div_req, $required) . '<br>';
 
-$div_options = ['data-numQ' => $numQ];
+$div_options = ['data-numQ' => $nq];
 $div_options['class'] = ['lastQ', 'question', 'elgg-discover'];
 
 $preguntas = elgg_format_element('div', $div_options, $questionType);
 
 //NEW
-$preguntas .= elgg_view('input/button', ['name' => 'newQ', 'value' => elgg_echo('encuestas_examenes:new'), 'class' => 'new elgg-button-submit', 'id' => 'new'.$numQ]);
+$preguntas .= elgg_view('input/button', ['name' => 'newQ', 'value' => elgg_echo('encuestas_examenes:new'), 'class' => 'new elgg-button-submit', 'id' => 'new'.$nq]);
 $preguntas .= elgg_view('input/hidden', ['name' => 'numQuestions', 'value' => '1', 'id' => 'numQuestions']);
 
 $submit =  elgg_view('input/submit', ['value' => elgg_echo('encuestas_examenes:save'), 'class' => 'submitSave']);
@@ -133,8 +128,6 @@ $preguntas .= elgg_format_element('div', [], $submit) . '<br>';
 $back = elgg_view_icon('arrow-left', ['class' => 'back']);
 $preguntas .= elgg_format_element('div', [], $back); 
 	 
-
-
 
 $optConf['id'] = 'preguntas';
 $optConf['class'] = 'hidden';
